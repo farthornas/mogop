@@ -59,12 +59,9 @@ class Forward2Es(Protocol):
             p.addErrback(lambda err: err.printTraceback())
 
         self.transport.write("Received data\n")
-        print("trying to write back")
-    
 
     def filter_ideals(self, i):
         """Return only ideals  from query result if there is any"""
-        
         if i['hits']['total'] > 0:
             print("Plant ideals found")
             hits =  i['hits']['hits'][0]['_source']#ideals assuming only one entry
@@ -79,35 +76,31 @@ class Forward2Es(Protocol):
         Returns a dictionary with difference from ideal where ideals and
         reading found"""
         diff = {}
+        print("Computing diff")
+        print("Ideals: {}".format(ideals))
+        print("Readings: {}".format(sens_read))
         for reading, value in sens_read.items():
             for ideal, estimate in ideals.items():
                 if reading.strip() != (SPECIES or DATA_TYPE) and ideal.strip() != (SPECIES or DATA_TYPE):
-                    print("Inside for for if")
                     if ideal == reading: #Ideal without max and min value
-                        print("Inside for for if if equal")
                         deviation = (-1)*(int(estimate) - int(value))
                         d = {DEVIATION_FROM.format(ideal):deviation}
                         diff.update(d)
                     if MIN in ideal: #Ideal with min value
-                        print("Inside for for if if min")
                         lim_min_ideal = ideal.split(MIN)[0]
                         if lim_min_ideal in reading:
                             deviation = int(value) - int(estimate)
                             d = {DEVIATION_FROM.format(ideal):deviation}
                             diff.update(d)
                     if MAX in ideal: #Ideal with max value
-                        print("Inside for for if if max")
                         lim_max_ideal = ideal.split(MAX)[0]
-                        print(lim_max_ideal)
                         if lim_max_ideal == reading:
                             deviation = int(value) - int(estimate)
                             d = {DEVIATION_FROM.format(ideal):deviation}
                             diff.update(d)
+        print('Returned Diff:{}'.format(diff))
         return diff
 
-    def printer(self, i):
-        print('printing results')
-        print(i)
 
 class Elastic(object):
     #DOC TYPES
@@ -124,19 +117,21 @@ class Elastic(object):
 
     @inlineCallbacks
     def index_data(self, data, index=None):
+        print("Indexing")
+        print(data)
         if index is None:
             index = self.index
         i = self.es.index(data, doc_type=self.doc_type, index=index)
         print("Data indexed")
         yield i
 
-    #@inlineCallbacks
+    @inlineCallbacks
     def query_plant_ideals(self, data):
         species = data.get('species')
-        print("\nQuery for plant:".format(species))
+        print("\nQuery for plant: {}".format(species))
         query = {'query': {'match': {'species': { 'query': species, 'type': 'phrase'}}}}
         returned = self.es.search(query, doc_type=PLANT_IDEALS, index='test3')
-        return returned
+        yield returned
 
     def print_results_received(results):
         print('Result Received: {}'.format(results))
@@ -158,9 +153,6 @@ class Forward2EsFactory(Factory):
 
 
 if __name__ =='__main__':
-    #fe = Forward2Es()
     endpoint = TCP4ServerEndpoint(reactor, 1234)
     endpoint.listen(Forward2EsFactory())
-    #fe.addErrback(lambda err: err.printTraceback())
     reactor.run()
-    print("reactor running")
