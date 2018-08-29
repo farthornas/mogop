@@ -5,17 +5,24 @@ from twisted.internet.defer import inlineCallbacks, returnValue
 
 from txes2 import ElasticSearch
 
+TIMESTAMPIDEALS = 'tstamp'
+IDEALS_QUERY = {"sort":[  {TIMESTAMPIDEALS: { "order" : "desc"}} ],
+                "size":1,
+                "query": {"match_phrase": {"species": {"query":"{}"}}}}
+
 @inlineCallbacks
 def example():
 
     index = 'idealstest'
-    doc_type = 'test'
+    species = "palm2"
     es = ElasticSearch('127.0.0.1:9200')
+    query = {"sort":[{TIMESTAMPIDEALS: {"order" : "desc"}}],
+             "size":1,
+             "query": {"match_phrase": {"species": {"query":species}}}}
 
-    query = {"size":1,"sort":[  {"tstamp": { "order" : "desc" }} ],"query": {"match_phrase": {"species": {"query":"palm2"}}}}
-    r = yield es.search(index = index, doc_type = doc_type,query = query)#Index does not seem to be concidered in query
-    #by txes2, this causes elasticsearch to throw exception on idicies which does not have a field called tstamp.
-    returnValue(r)
+
+    result = yield es.search(query, indexes=index)#index not recognised, indexes concidered in query
+    returnValue(result)
 
 @inlineCallbacks
 def print_it(it):
