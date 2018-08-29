@@ -131,7 +131,7 @@ class Elastic(object):
     def index_data(self, data, index=None):
         print("Indexing")
         tstamp = timestamp()
-        data = add_key_val(data, "tstamp", tstamp)
+        data = add_key_val(data, TIMESTAMP, tstamp)
         if index is None:
             index = self.index
         yield self.es.index(data, doc_type=self.doc_type, index=index)
