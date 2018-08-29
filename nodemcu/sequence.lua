@@ -21,6 +21,7 @@ local MAIN_ALARM = 0
 local sens = dofile("sensors.lua")
 --local user = dofile("user.lua")
 local server = dofile("connect_to_server.lua")
+local aux = dofile("aux_power.lua")
 
 --******************* SENSING AND SLEEP *******************
 
@@ -31,11 +32,13 @@ end
     
 function record_loop()
     --todo make 10 separate recordings
+    aux_on()
     for _,item in pairs(SENS) do
         if item == SOILMOISTURE then
             measurements[SOILMOISTURE] = sens.SoilMoisture()           
         end
     end
+    aux_off()
     add_setup_param()
     send_json()
     tmr.alarm(1, 5000, tmr.ALARM_SINGLE, function()
