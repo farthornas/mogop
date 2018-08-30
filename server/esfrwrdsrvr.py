@@ -55,7 +55,7 @@ class Forward2Es(Protocol):
             updated_reading.addCallback(self.elastic.index_data)
         if PLANT_IDEALS in received_data['type']:
             print("Ideals about to be indexed")
-            received_data = self.elastic.add_key_val(received_data, TIMESTAMPIDEALS, t)
+            received_data = add_key_val(received_data, TIMESTAMP, t)
             p = self.elastic.index_data(received_data, index=INDEX_IDEALS)
             p.addErrback(lambda err: err.printTraceback())
 
