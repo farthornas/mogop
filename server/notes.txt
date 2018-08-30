@@ -1,0 +1,44 @@
+#To test server side
+
+Run an instance of Elasticsearch
+Run an instance of Kibana in separate terminal
+
+If elasticsearch and kibana are runned localy the
+esfrwrdsrvr.py should function with default parameters.
+
+Run esfrwrdsrvr.py by doing: python esfrwrdsrvr.py in terminal
+
+In a separate terminal you can input:
+> echo '{"type":"plant_reading","species":"palm3","s_soilmoisture":110}' | nc localhost 1234
+This will upload a plant reading to the database.
+
+> echo '{"type":"plant_ideals","species":"palm3","s_light_max":110, "s_light_min":80}' | nc localhost 1234
+This will upload a plant ideal to the database
+
+
+Often encountered problems:
+
+
+#Kibana wont recognise timestamp on new index.
+
+Solution:
+# Make sure the index isn't there
+DELETE /sandbox
+
+# Create the index
+PUT /sandbox
+
+# Add the mapping of properties to the document type `mem`
+PUT /sandbox/_mapping/mem
+{
+  "mem": {
+    "properties": {
+      "tstamp": {
+        "type": "date"
+      },
+      "free": {
+         "type": "long"
+      }
+    }
+  }
+}
