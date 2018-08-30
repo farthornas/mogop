@@ -110,7 +110,7 @@ def compute_diff(ideals, sens_read):
                         diff.update(d)
                 if MAX in ideal: #Ideal with max value
                     lim_max_ideal = ideal.split(MAX)[0]
-                    if lim_max_ideal == reading:
+                    if lim_max_ideal in reading:
                         deviation = int(value) - int(estimate)
                         d = {DEVIATION_FROM.format(ideal):deviation}
                         diff.update(d)
