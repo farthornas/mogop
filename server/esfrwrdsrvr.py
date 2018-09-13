@@ -9,6 +9,7 @@ from twisted.logger import Logger
 from txes2 import ElasticSearch
 from txes2.exceptions import NoServerAvailable
 from ast import literal_eval
+import argparse
 import json
 import time
 import datetime
@@ -175,6 +176,17 @@ class Forward2EsFactory(Factory):
 
 
 if __name__ =='__main__':
-    endpoint = TCP4ServerEndpoint(reactor, 1234)
-    endpoint.listen(Forward2EsFactory())
-    reactor.run()
+
+    parser = argparse.ArgumentParser(description='Sensor node -> Elastic Search server')
+    parser.add_argument('-port', type=int, help='Port server should run on')
+    parser.add_argument('--run', action='store_true', help='Start server')
+    args = parser.parse_args()
+    port = args.port
+    if port != None:
+        print("Port set to: {}".format(args.port))
+    #endpoint = TCP4ServerEndpoint(reactor, args.port)
+    if args.run is True:
+        print('Server is starting on port {}'.format(args.port))
+        endpoint = TCP4ServerEndpoint(reactor, args.port)
+        endpoint.listen(Forward2EsFactory())
+        reactor.run()

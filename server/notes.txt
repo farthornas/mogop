@@ -21,24 +21,33 @@ Often encountered problems:
 
 #Kibana wont recognise timestamp on new index.
 
-Solution:
-# Make sure the index isn't there
-DELETE /sandbox
-
-# Create the index
-PUT /sandbox
-
-# Add the mapping of properties to the document type `mem`
-PUT /sandbox/_mapping/mem
-{
-  "mem": {
-    "properties": {
-      "tstamp": {
-        "type": "date"
-      },
-      "free": {
-         "type": "long"
+    Solution:
+    # Make sure the index isn't there
+    DELETE /sandbox
+    
+    # Create the index
+    PUT /sandbox
+    
+    # Add the mapping of properties to the document type `mem`
+    PUT /sandbox/_mapping/mem
+    {
+      "mem": {
+        "properties": {
+          "tstamp": {
+            "type": "date"
+          },
+          "free": {
+             "type": "long"
+          }
+        }
       }
     }
-  }
-}
+
+Can't connect to elastic search or open kibana on remote machine
+
+    In elasticsearch folder /config/elasticsearch.yml set "network.host:
+    0.0.0.0"
+    followed by restarting elasticsearch
+
+    In kibana folder /config/kibana.yml set "server.host: 0.0.0.0"
+    followed by restarting kibana
