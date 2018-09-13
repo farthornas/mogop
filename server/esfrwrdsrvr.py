@@ -33,9 +33,11 @@ INDEX_IDEALS = 'idealstest'
 
 class Forward2Es(Protocol):
 
-    def __init__(self):
-        self.elastic = Elastic()
-
+    def __init__(self, elastic_server=None):
+        if elastic_server != None:
+            self.elastic = Elastic(host=elastic_server)
+        else:
+            self.elastic = Elastic()
     def connectionMade(self):
         self.transport.write('{"message":"Welcome to Mogop Server","status":1}')
 
@@ -171,22 +173,28 @@ def add_dict(data_update, data):
 
 
 class Forward2EsFactory(Factory):
+    
+    def __init__(self, es_srvr):
+        self.es_srvr = es_srvr
+
     def buildProtocol(self, addr):
-        return Forward2Es()
+        return Forward2Es(elastic_server=self.es_srvr)
 
 
 if __name__ =='__main__':
 
     parser = argparse.ArgumentParser(description='Sensor node -> Elastic Search server')
-    parser.add_argument('-port', type=int, help='Port server should run on')
+    parser.add_argument('port', type=int, help='Port server should run on')
+    parser.add_argument('elastic_srvr', type=str, help='Server elasticsearch is running on')
     parser.add_argument('--run', action='store_true', help='Start server')
     args = parser.parse_args()
     port = args.port
-    if port != None:
-        print("Port set to: {}".format(args.port))
+    es_srvr = args.elastic_srvr
+    print("Port set to: {}".format(args.port))
+    print("Elasticsearch server set to: {}".format(es_srvr))
     #endpoint = TCP4ServerEndpoint(reactor, args.port)
     if args.run is True:
-        print('Server is starting on port {}'.format(args.port))
-        endpoint = TCP4ServerEndpoint(reactor, args.port)
-        endpoint.listen(Forward2EsFactory())
+        print('Server is starting on port {}'.format(port))
+        endpoint = TCP4ServerEndpoint(reactor, port)
+        endpoint.listen(Forward2EsFactory(es_srvr))
         reactor.run()
