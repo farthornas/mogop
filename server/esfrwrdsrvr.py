@@ -61,6 +61,7 @@ class Forward2Es(Protocol):
             p.addErrback(lambda err: err.printTraceback())
 
         self.transport.write("Received data\n")
+        self.transport.loseConnection()
 
 def sens_read_list(raw_data):
     """Return list of sensor values from incomming data"""
