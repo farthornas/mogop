@@ -1,4 +1,5 @@
 #from twisted.protocols.basic import LineReceiver
+from daemonify import Daemon
 from pprint import pprint
 from twisted.internet.protocol import Protocol
 from twisted.internet.protocol import Factory
@@ -181,6 +182,20 @@ class Forward2EsFactory(Factory):
     def buildProtocol(self, addr):
         return Forward2Es(elastic_server=self.es_srvr)
 
+class RunAsDaemon(Daemon):
+
+    def set_port_srvr(self, port, server):
+        self.port = port
+        self.server = server
+
+    def run(self):
+        endpoint = TCP4ServerEndpoint(reactor, self.port)
+        endpoint.listen(Forward2EsFactory(self.server))
+        reactor.run()
+
+    def stop_reactor(self):
+        print('Server is stopping on port {}'.format(self.port))
+        reactor.stop()
 
 if __name__ =='__main__':
 
@@ -188,14 +203,22 @@ if __name__ =='__main__':
     parser.add_argument('port', type=int, help='Port server should run on')
     parser.add_argument('elastic_srvr', type=str, help='Server elasticsearch is running on')
     parser.add_argument('--run', action='store_true', help='Start server')
+    parser.add_argument('--stop', action='store_true', help='Stop server')
+    parser.add_argument('--pid', action='store_true', help='Process ID of server running')
     args = parser.parse_args()
     port = args.port
     es_srvr = args.elastic_srvr
-    print("Port set to: {}".format(args.port))
-    print("Elasticsearch server set to: {}".format(es_srvr))
-    #endpoint = TCP4ServerEndpoint(reactor, args.port)
+    print("Port: {}".format(args.port))
+    print("Elasticsearch server: {}".format(es_srvr))
+    daemonize = RunAsDaemon('/tmp/esfrwrdsrvr.pid')
+    daemonize.set_port_srvr(port, es_srvr)
     if args.run is True:
-        print('Server is starting on port {}'.format(port))
-        endpoint = TCP4ServerEndpoint(reactor, port)
-        endpoint.listen(Forward2EsFactory(es_srvr))
-        reactor.run()
+        print('Server (Daemon) starting on {}:{}'.format(es_srvr,port))
+        daemonize.start()
+    if args.stop is True:
+        print('Server (Daemon) stoping on {}:{}'.format(es_srvr,port))
+        daemonize.stop()
+    if args.pid is True:
+        print ('PID: {}'.format(daemonize.get_pid()))
+
+
