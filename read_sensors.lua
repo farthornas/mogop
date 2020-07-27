@@ -75,8 +75,7 @@ local function moisture()
     set_gpio_conf({MOIST}, OUTPUT) -- configure pins for logic circuit operation
     print("Reading moisture sensor with polaity set: "..i..", 0 = top, 1 = bot")
     gpio.write(MOIST, i) -- set pin according to rand value (0 or 1)
-    local k = 1 % i -- complementary of what i is 
-    mux_select(0,0,k) -- select corresponding mux line.
+    mux_select(0,0,i) -- select corresponding mux line.
     moisture_reading = read_adc(10) -- read moisture sensor
     set_gpio_conf({SEL0, SEL1, SEL2, MOIST}, HIGH_Z) -- clean pin states
     print("Moisture reading finished")
@@ -132,7 +131,7 @@ local function sens_read()
     local readings = {}
     aux_power(ON)
     print("Aux power turned on")
-    tmr.delay(SENSDELAY)
+    tmr.delay(500)
     readings[MSTR] = moisture()
     tmr.delay(SENSDELAY)
     readings[LGT] = alight()
